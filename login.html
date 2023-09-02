@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрација</title>
+</head>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="./jquery-3.6.4.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $(".greska-tekst").css({ 'opacity': 0.0 });
+        $("#forma").submit(function(e) {
+            e.preventDefault();
+            validacija()
+        })
+    })
+
+    function validacija() {
+        
+        const filtrirano = [
+            validacija_imeprezime(),
+            validacija_email(),
+            validacija_sifra(),
+            validacija_telefon(),
+            validacija_ponovljene_sifre()
+        ];
+
+        for (let i = 0; i < filtrirano.length; i++) {
+            const el = filtrirano[i];
+            if (el === false) {
+                alert("Унети подаци нису исправни!")
+                return;
+            }
+        }
+
+        const name = $("#imeprezime").val();
+        const email = $("#email").val();
+        const phone = $("#telefon").val();
+        const password = $("#sifra").val();
+        const apitoken = "rGabHFYKtmctughTxy6xoZ8rd4ek1zuLFNOQLUhXaaxyoeeoQ2vAySD0AJ5XZMgHPdWhMd0lZMCbDgNCyzF0idqDr5";
+
+        const link_prijava = "https://vsis.mef.edu.rs/projekat/ulaznice/public_html/api/login";
+        $.post(link_prijava, {
+            name: name,
+            email: email,
+            phone: phone,
+            password: password,
+            apitoken: apitoken,
+        },
+        function (data, status) {
+            alert("Data: " + data + "\nStatus: " + status);
+            console.log(data)
+        }
+        );
+    }
+
+    function validacija_email() {
+        let email = $("#email").val();
+        let email_REGEX = /([\w\.\-_]+)?\w+@[\w-_]+(\.\w+){1,}/;
+        let email_filtrirano = email_REGEX.test(email);
+
+        animiraj_gresku("#email", "#greska-tekst-email", email_filtrirano)
+
+        console.log("Email: " + email_filtrirano);
+        return email_filtrirano;
+    }
+
+    function validacija_sifra() {
+        let sifra = $("#sifra").val();
+        let sifra_REGEX = /((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[ !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~]).{6,})/;
+        let sifra_filtrirano = sifra_REGEX.test(sifra);
+
+        animiraj_gresku("#sifra", "#greska-tekst-sifra", sifra_filtrirano)
+
+        console.log("Sifra: " + sifra_filtrirano)
+        return sifra_filtrirano;
+    }
+
+    function validacija_imeprezime() {
+        let imeprezime = $("#imeprezime").val();
+        let imeprezime_REGEX = /^(?=.{5,180}$)([A-ZČĆŠĐŽАБВГДЂЕЖЗИЈКЛЉМНЊОПРСТЋУФХЦЧЏШ])([a-zčćšđžабвгдђежзијклљмнњопрстћуфхцчџш]+)(( |-)([A-ZČĆŠĐŽАБВГДЂЕЖЗИЈКЛЉМНЊОПРСТЋУФХЦЧЏШ])([a-zčćšđžабвгдђежзијклљмнњопрстћуфхцчџш]+))+$/;
+        let imeprezime_filtrirano = imeprezime_REGEX.test(imeprezime);
+
+        animiraj_gresku("#imeprezime", "#greska-tekst-imeprezime", imeprezime_filtrirano)
+        return imeprezime_filtrirano;
+    }
+
+    function validacija_telefon() {
+        let telefon = $("#telefon").val();
+        let telefon_REGEX = /^[+][1-9][0-9]{8,14}/;
+        let telefon_filtrirano = telefon_REGEX.test(telefon);
+
+        if (telefon === "") telefon_filtrirano = true;
+
+        animiraj_gresku("#telefon", "#greska-tekst-telefon", telefon_filtrirano)
+        return telefon_filtrirano;
+    }
+
+    function validacija_ponovljene_sifre() {
+        let sifra = $("#sifra").val();
+        let sifra_ponovljena = $("#sifra-ponovljena").val();
+        let sifra_ponovljena_filtrirano = (sifra === sifra_ponovljena);
+
+        animiraj_gresku("#sifra-ponovljena", "#greska-tekst-sifra-ponovljena", sifra_ponovljena_filtrirano)
+        return sifra_ponovljena_filtrirano;
+    }
+
+    function animiraj_gresku(polje, labela, stanje) {
+        if (!stanje) {
+            $(polje).addClass('greska')
+            $(labela).css({ 'opacity': 1.0 })
+        }
+
+        if (stanje) {
+            $(polje).removeClass('greska')
+            $(labela).css({ 'opacity': 0.0 })
+        }
+    }
+</script>
+
+<body>
+
+    <h1 class="naslov">Регистрација</h1>
+    <hr>
+    <div class="box">
+        <form id="forma" onsubmit="return false">
+            <div class="container">
+                <label>Име и Презиме: </label>
+                <input onfocusout="validacija_imeprezime()" type="text" placeholder="Унесите име и презиме"
+                    name="imeprezime" id="imeprezime" required>
+                <label class="greska-tekst" id="greska-tekst-imeprezime">Име и презиме није правилно написано</label><br><br>
+
+                <label>Е-Мејл: </label>
+                <input onfocusout="validacija_email()" type="text" placeholder="Унесите Е-Мејл	" name="email" id="email"
+                    required>
+                <label class="greska-tekst" id="greska-tekst-email">Е-Мејл	није правилно написан</label><br><br>
+
+                <label>Телефон (није обавезно): </label>
+                <input onfocusout="validacija_telefon()" type="text" placeholder="Унесите број телефона" name="telefon"
+                    id="telefon">
+                <label class="greska-tekst" id="greska-tekst-telefon">Телефон није правилно написан</label><br><br>
+
+                <label>Лозинка: </label>
+                <input onfocusout="validacija_sifra()" type="text" placeholder="Унесите лозинку" name="sifra" id="sifra"
+                    required>
+                <label class="greska-tekst" id="greska-tekst-sifra">Лозинка није правилно написана</label><br><br>
+
+                <label>Поновљена Лозинка: </label>
+                <input onfocusout="validacija_ponovljene_sifre()" type="text" placeholder="Унесите поново лозинку"
+                    name="sifra-ponovljena" id="sifra-ponovljena" required>
+                <label class="greska-tekst" id="greska-tekst-sifra-ponovljena">Лозинке се не подударају</label><br><br>
+
+                <button id="registracijabt" type="submit">Региструј се</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+
+</html>
